@@ -1,0 +1,281 @@
+M_CH_S_Router
+GuiRouter
+606,205
+true
+4
+cua0|1|null|100.00
+eth0|0|M_CH_S_Router-TO-M_CH_S|100.0|B3:1D:78:14:2E:29|true
+eth1|0|BOSS HUB(eth0) - M_CH_S_Router(eth1)|100.0|9C:14:BB:52:4D:B2|true
+ser0|4|null|100.00|400000
+#config
+hostname M_CH_S_Router
+no interface ser0 shutdown
+interface eth1 mac-address 8A:95:84:C4:AC:25
+interface eth1 ip address 204.188.0.2 255.255.0.0
+no interface eth1 shutdown
+interface eth0 mac-address 1F:85:49:12:79:95
+interface eth0 ip address 10.0.0.3 255.0.0.0
+no interface eth0 shutdown
+ip route default 0.0.0.0 172.198.99.254 eth0
+clock set 00:00:00 1 1 1970
+username root javanetsim
+router ospf area0
+#endconfig
+#data
+vlan.dat
+1
+
+#enddata
+BOSS HUB
+GuiHub
+533,77
+true
+5
+eth0|0|BOSS HUB(eth0) - M_CH_S_Router(eth1)|100.0|#|false
+eth1|0|BIG BOSS-TO-BOSS HUB|100.0|#|false
+eth2|0|OFF_R-TO-BOSS HUB|100.0|#|false
+eth3|0|null|100.00|#|false
+eth4|0|null|100.00|#|false
+#config
+#endconfig
+#data
+#enddata
+BIG BOSS
+GuiPC
+463,4
+true
+2
+cua0|1|null|100.00
+eth0|0|BIG BOSS-TO-BOSS HUB|100.0|A4:7B:C0:A5:9B:30|true
+#config
+hostname BIG BOSS
+interface eth0 mac-address 3D:9A:C3:3B:BF:98
+interface eth0 ip address 204.188.0.1 255.255.0.0
+no interface eth0 shutdown
+ip route default 0.0.0.0 204.188.0.45 eth0
+clock set 00:00:00 1 1 1970
+username root javanetsim
+router ospf area0
+#endconfig
+#data
+vlan.dat
+1
+
+#enddata
+H3_OFFICE1
+GuiHub
+44,257
+true
+5
+eth0|0|H2_OFFICE1-TO-H3_OFFICE1|100.0|#|false
+eth1|0|OFFICE1 pc3-TO-H3_OFFICE1|100.0|#|false
+eth2|0|null|100.00|#|false
+eth3|0|null|100.00|#|false
+eth4|0|null|100.00|#|false
+#config
+#endconfig
+#data
+#enddata
+OFF_R
+GuiRouter
+419,106
+true
+4
+cua0|1|null|100.00
+eth0|0|OFF_R-TO-H_OFFICE1|100.0|B6:A7:C1:50:8D:9C|true
+eth1|0|OFF_R-TO-BOSS HUB|100.0|7A:C1:9D:28:5C:B6|true
+ser0|4|null|100.00|400000
+#config
+hostname OFF_R
+no interface ser0 shutdown
+interface eth1 mac-address 8D:C1:42:A8:A8:7D
+interface eth1 ip address 204.188.0.45 255.255.0.0
+no interface eth1 shutdown
+interface eth0 mac-address 59:97:BA:30:B6:51
+interface eth0 ip address 172.198.99.254 255.255.0.0
+no interface eth0 shutdown
+ip route default 0.0.0.0 204.188.0.2 eth0
+clock set 00:00:00 1 1 1970
+username root javanetsim
+router ospf area0
+#endconfig
+#data
+vlan.dat
+1
+
+#enddata
+H4_OFFICE1
+GuiHub
+63,112
+true
+5
+eth0|0|H4_OFFICE1-TO-H_OFFICE1|100.0|#|false
+eth1|0|null|100.00|#|false
+eth2|0|H4_OFFICE1-TO-OFFICE1 pc5|100.0|#|false
+eth3|0|null|100.00|#|false
+eth4|0|null|100.00|#|false
+#config
+#endconfig
+#data
+#enddata
+OFFICE1 pc5
+GuiPC
+125,158
+true
+2
+cua0|1|null|100.00
+eth0|0|H4_OFFICE1-TO-OFFICE1 pc5|100.0|C7:49:59:71:89:35|true
+#config
+hostname OFFICE1 pc5
+interface eth0 mac-address A7:C0:4C:34:BA:65
+interface eth0 ip address 172.198.18.5 255.255.0.0
+no interface eth0 shutdown
+ip route default 0.0.0.0 172.198.99.254 eth0
+clock set 00:00:00 1 1 1970
+username root javanetsim
+router ospf area0
+#endconfig
+#data
+vlan.dat
+1
+
+#enddata
+OFFICE1 pc4
+GuiPC
+293,41
+true
+2
+cua0|1|null|100.00
+eth0|0|OFFICE1 pc4-TO-H_OFFICE1|100.0|A7:16:5A:81:99:92|true
+#config
+hostname OFFICE1 pc4
+interface eth0 mac-address 11:2A:86:47:46:29
+interface eth0 ip address 172.198.127.254 255.255.0.0
+no interface eth0 shutdown
+ip route default 0.0.0.0 172.198.99.254 eth0
+arp 204.188.0.1          3D:9A:C3:3B:BF:98
+clock set 00:00:00 1 1 1970
+username root javanetsim
+router ospf area0
+#endconfig
+#data
+vlan.dat
+1
+
+#enddata
+H_OFFICE1
+GuiHub
+183,106
+true
+5
+eth0|0|OFFICE1 pc1-TO-H_OFFICE1|100.0|#|false
+eth1|0|H_OFFICE1-TO-H2_OFFICE1|100.0|#|false
+eth2|0|H4_OFFICE1-TO-H_OFFICE1|100.0|#|false
+eth3|0|OFFICE1 pc4-TO-H_OFFICE1|100.0|#|false
+eth4|0|OFF_R-TO-H_OFFICE1|100.0|#|false
+#config
+#endconfig
+#data
+#enddata
+OFFICE1 pc3
+GuiPC
+131,301
+true
+2
+cua0|1|null|100.00
+eth0|0|OFFICE1 pc3-TO-H3_OFFICE1|100.0|8D:36:9F:42:46:9C|true
+#config
+hostname OFFICE1 pc3
+interface eth0 mac-address 36:C2:89:58:75:C6
+interface eth0 ip address 172.198.71.254 255.255.0.0
+no interface eth0 shutdown
+ip route default 0.0.0.0 172.198.99.254 eth0
+clock set 00:00:00 1 1 1970
+username root javanetsim
+router ospf area0
+#endconfig
+#data
+vlan.dat
+1
+
+#enddata
+OFFICE1 pc2
+GuiPC
+288,183
+true
+2
+cua0|1|null|100.00
+eth0|0|H2_OFFICE1-TO-OFFICE1 pc2|100.0|8F:A9:59:26:70:65|true
+#config
+hostname OFFICE1 pc2
+interface eth0 mac-address 1B:6D:68:29:11:62
+interface eth0 ip address 172.198.127.254 255.255.0.0
+no interface eth0 shutdown
+ip route default 0.0.0.0 172.198.99.254 eth0
+clock set 00:00:00 1 1 1970
+username root javanetsim
+router ospf area0
+#endconfig
+#data
+vlan.dat
+1
+
+#enddata
+H2_OFFICE1
+GuiHub
+176,236
+true
+5
+eth0|0|H2_OFFICE1-TO-OFFICE1 pc2|100.0|#|false
+eth1|0|H2_OFFICE1-TO-H3_OFFICE1|100.0|#|false
+eth2|0|H_OFFICE1-TO-H2_OFFICE1|100.0|#|false
+eth3|0|null|100.00|#|false
+eth4|0|null|100.00|#|false
+#config
+#endconfig
+#data
+#enddata
+OFFICE1 pc1
+GuiPC
+89,37
+true
+2
+cua0|1|null|100.00
+eth0|0|OFFICE1 pc1-TO-H_OFFICE1|100.0|6B:49:71:3C:45:1B|true
+#config
+hostname OFFICE1 pc1
+interface eth0 mac-address 19:BB:6C:A5:7B:3B
+interface eth0 ip address 172.198.0.1 255.255.0.0
+no interface eth0 shutdown
+ip route default 0.0.0.0 172.198.99.254 eth0
+clock set 00:00:00 1 1 1970
+username root javanetsim
+router ospf area0
+#endconfig
+#data
+vlan.dat
+1
+
+#enddata
+M_CH_S
+GuiPC
+606,326
+true
+2
+cua0|1|null|100.00
+eth0|0|M_CH_S_Router-TO-M_CH_S|100.0|60:3C:5E:7F:69:6F|true
+#config
+hostname M_CH_S
+interface eth0 mac-address B4:49:96:38:98:90
+interface eth0 ip address 10.0.0.2 255.0.0.0
+no interface eth0 shutdown
+ip route default 0.0.0.0 10.0.0.3 eth0
+clock set 00:00:00 1 1 1970
+username root javanetsim
+router ospf area0
+#endconfig
+#data
+vlan.dat
+1
+
+#enddata
