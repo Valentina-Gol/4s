@@ -8,6 +8,7 @@ class Handler{
 public:  
     bool CheckAllMatrix(int** matrix, int matrix_size, int& x_coordinate, int& y_coordinate);
     void PrintMatrix(int** matrix, int marix_size);
+    bool CkeckSizeInVector( std::vector<Square>& vector, int vector_size);
     void PrintVector(std::vector<Square> vector, int vector_size);
     void PopBackVector(int** matrix, int matrix_size, std::vector<Square>& vector, int& vector_size);
     int FindNewSizeRightDown(int** matrix, int matrix_size, int x_coordinate, int y_coordinate);
