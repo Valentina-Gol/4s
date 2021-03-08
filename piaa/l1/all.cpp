@@ -2,6 +2,8 @@
 #include <algorithm>
 #include <iostream>
 
+int count = 0;
+
 class Square{
 
 private:
@@ -47,45 +49,54 @@ int Handler::FindNewSizeRightDown(int** matrix, int matrix_size, int x_coordinat
     int i = x_coordinate, j = y_coordinate;
 
     int max_size = matrix_size-1;
+
+    count+=5;
     
+    //find a square with maximum size in this coordinates
     while (right_size <= max_size && j+right_size<matrix_size && matrix[i][j+right_size]!=1 ){
         right_size++;
+        count+=4;//increase a right_size and check values in condition
     } 
+
     while (down_size <= max_size && i+down_size<matrix_size && matrix[i+down_size][j]!=1 ){
         down_size++;
+        count+=4;//increase a right_size and check value in matrix
     }
     int size=std::min(right_size, down_size);
     std::cout<<"Find new square at coordinates: ("<<x_coordinate<<", "<<y_coordinate<<")... Find a square size: "<<size<<"\n";
-
-
     return size;
 }
 
 void Handler::SetSquareOfOnes(int** matrix, int matrix_size, int x_coordinate, int y_coordinate, int square_size){
+    //set square of ones with given size and coordinates in matrix
     for (int i = x_coordinate; i < x_coordinate + square_size; i++){
         for (int j = y_coordinate; j < y_coordinate + square_size;j++){
             matrix[i][j]=1;
         }
     }
+    count+=square_size*square_size;
     
 }
 
 void Handler::SetSquareOfZeros(int** matrix, int matrix_size, int x_coordinate, int y_coordinate, int square_size){
+    //set square of zeros with given size and coordinates in matrix
     for (int i = x_coordinate; i < x_coordinate + square_size; i++){
         for (int j = y_coordinate; j < y_coordinate + square_size;j++){
             matrix[i][j]=0;
         }
     }
-    
+    count+=square_size*square_size;
 }
 
 bool Handler::CheckAllMatrix(int** matrix, int matrix_size, int& x_coordinate, int& y_coordinate, std::vector<Square>& vector, int vector_size){
     std::cout<<"Cheking free space in matrix...\n";
     for (int i=0;i<matrix_size;i++){
         for (int j=0;j<matrix_size;j++){
-            if (matrix[i][j]==0){
+            count+=1;
+            if (matrix[i][j]==0){//if find a free cell
                 x_coordinate = i;
                 y_coordinate = j;
+                count+=2;
                 std::cout<<"Find free space at coordinates: ("<<x_coordinate<<", "<<y_coordinate<<")\n";
                 return true;
             }
@@ -100,11 +111,13 @@ void Handler::PopBackVector(int** matrix, int matrix_size, std::vector<Square>& 
    while (1){
        if (vector_size<=3){
            flag=1;
+           count+=2;
            std::cout<<"All optimal candidate for filling square was find, stoped cheking\n";
            break;
         } else{
             Square square = vector[vector_size-1];
-            if (vector[vector_size-1].GetSize()>=2){
+            count+=1;
+            if (vector[vector_size-1].GetSize()>=2){//delete the last value in vector, push value with decreasing size
                 
                 vector.pop_back();
                 vector_size-=1;
@@ -112,12 +125,14 @@ void Handler::PopBackVector(int** matrix, int matrix_size, std::vector<Square>& 
                 this->SetSquareOfOnes(matrix, matrix_size, square.GetXCoordinate(), square.GetYCoordinate(), square.GetSize()-1);
                 vector.push_back(Square(square.GetSize()-1, square.GetXCoordinate(), square.GetYCoordinate()));
                 vector_size+=1;
+                count+=7;
                 break;
             }
-            else{
+            else{//deletethe last value in vector
                 vector.pop_back();
                 vector_size-=1;
                 this->SetSquareOfZeros(matrix, matrix_size, square.GetXCoordinate(), square.GetYCoordinate(), square.GetSize());
+                count+=4;
                 continue;
             }
         }
@@ -131,12 +146,14 @@ void Handler::PrintMatrix(int** matrix, int matrix_size){
         }
         std::cout<<'\n';
     }
+    count+=matrix_size*matrix_size;
 }
 
 void Handler::PrintVector(std::vector<Square> vector, int vector_size){
     for (int i=0;i<vector_size;i++){
         std::cout<<vector[i].GetSize()<<' '<<vector[i].GetXCoordinate()<<' '<<vector[i].GetYCoordinate()<<", ";
     }
+    count+=3*vector_size;
     std::cout<<"\n";
 }
 
@@ -148,20 +165,26 @@ int main(){
     int n;
     std::cin>>n;
 
-    int result_size = n*n;
+    int result_size = n*n;//max size, if squares has sizes 1
+
+    count+=2;//for following and previous operations
 
     if (n==2){
         std::cout<<'4'<<"\n";
         std::cout<<"1 1 1\n1 2 1\n2 1 1\n2 2 1\n";
+        std::cout<<"\nAll number of operations for square size "<< n <<" = "<<count<<"\n";
+
         return 0;
     }
-
-    if (n%2==0){
+    
+    count+=1;
+    if (n%2==0){//especial case
         result_size = 4;
         finish.push_back(Square(n/2, 0, 0));
         finish.push_back(Square(n/2, 0, n/2));
         finish.push_back(Square(n/2, n/2, 0));
         finish.push_back(Square(n/2, n/2, n/2));
+        count+=5;
     }
     else{
 
@@ -171,13 +194,17 @@ int main(){
             matrix[i]= new int[n];
         }
 
+        count+=2*n+1;
+
         for (int i=0;i<n;i++){
             for (int j=0;j<n;j++){
                 matrix[i][j]=0;
             }
         }
+        count+=n*n;
 
         Handler handler;
+
         if (n==15){
             current.push_back(Square(n*2/3, 0, 0));
             current.push_back(Square(n/3, 0, n*2/3));
@@ -186,6 +213,8 @@ int main(){
             handler.SetSquareOfOnes(matrix, n, 0, 0, n*2/3);
             handler.SetSquareOfOnes(matrix, n, 0, n*2/3, n/3);
             handler.SetSquareOfOnes(matrix, n, n*2/3, 0, n/3);
+
+            count+=4;
         }
         else{
             current.push_back(Square(n/2 + 1, 0, 0));
@@ -195,6 +224,7 @@ int main(){
             handler.SetSquareOfOnes(matrix, n, 0, 0, n/2+1);
             handler.SetSquareOfOnes(matrix, n, 0, n/2+1, n/2);
             handler.SetSquareOfOnes(matrix, n, n/2+1, 0, n/2);
+            count+=4;
         }
 
         int current_x = 0;
@@ -203,8 +233,11 @@ int main(){
         int new_square_size = 0;
         int flag=0;
 
+        count+=5;
 
-        while (!current.empty() && flag!=1){
+
+        while (!current.empty() && flag!=1){//while not checked all optimal decisions
+            count+=2;
 
             std::cout<<"\nCurrent path: ";
             handler.PrintVector(current, current_max_size);
@@ -212,33 +245,39 @@ int main(){
             std::cout<<"\nCurrent matrix:\n";
             handler.PrintMatrix(matrix, n);  
 
+            count+=3;
             if (n>11 && current_max_size>=n){
                 handler.PopBackVector(matrix, n, current, current_max_size, flag);
                 continue;
             }
 
+            count+=1;
             if (current_max_size>=result_size){
                 std::cout<<"Current path size is longer then finish path size, stop cheking further\n";
                 handler.PopBackVector(matrix, n, current, current_max_size, flag);
                 continue;
             }
             
+            //set coordinates in free cell or delete values in vector if free cell din't find
             if (handler.CheckAllMatrix(matrix, n, current_x, current_y, current, current_max_size)){
                 int new_size = handler.FindNewSizeRightDown(matrix, n, current_x, current_y);
                 current.push_back(Square(new_size, current_x, current_y));
                 current_max_size+=1;
                 handler.SetSquareOfOnes(matrix, n, current_x, current_y, new_size);
+                count+=3;
             }
             else{
                 finish = current;
                 result_size = current_max_size;
                 handler.PopBackVector(matrix, n, current, current_max_size, flag);
+                count+=2;
             }
         }
         for (int i=0; i<n; i++){
             delete [] matrix[i];
         }
         delete [] matrix;
+        count+=2*n+1;
     }
 
     
@@ -246,5 +285,8 @@ int main(){
     for (int i=0;i<result_size;i++){
         std::cout<<finish[i].GetXCoordinate()+1<<' '<<finish[i].GetYCoordinate()+1<<' '<<finish[i].GetSize()<<'\n';
     }
+    count+=3*result_size;
+
+    std::cout<<"\nAll number of operations for square size "<< n <<" = "<<count<<"\n";
     return 0;
 }

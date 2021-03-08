@@ -1,2 +1,2 @@
 all:
-	g++ Handler.cpp Square.cpp lab1.cpp
+	g++ all.cpp -o lab1
