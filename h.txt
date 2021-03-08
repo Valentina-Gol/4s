@@ -1,1 +1,85 @@
 https://sci-hub.do/https://ieeexplore.ieee.org/abstract/document/7989179
+http://ejournal.ikado.ac.id/index.php/teknika/article/view/121
+
+	https://arxiv.org/abs/2003.07069
+https://arxiv.org/abs/2009.11212
+	https://upcommons.upc.edu/bitstream/handle/2117/333264/rapport-sfe.pdf?sequence=1&isAllowed=y
+	https://staff.science.uva.nl/a.visser/research/autonomous_driving/2020/MCAS_paper_wiggers_v2.pdf
+	https://arxiv.org/abs/2010.09776
+https://arxiv.org/abs/2007.03514
+		https://ced.petra.ac.id/index.php/elk/article/view/23019
+	https://arxiv.org/abs/1809.01268
+
+https://www.researchgate.net/profile/Vladislav-Lushkov/publication/337392081_Implementation_of_Unmanned_Control_of_Wheeled_Robots/links/5e3445a6299bf1cdb902542e/Implementation-of-Unmanned-Control-of-Wheeled-Robots.pdf
+
+
+
+Self-Supervised Discovering of Interpretable Features for Reinforcement Learning
+О чём статья: 
+https://arxiv.org/abs/2003.07069
+
+
+Robust Reinforcement Learning-based Autonomous Driving Agent for Simulation and Real World
+
+ В этой статье представлен алгоритм на основе DRL, который может выполнять автономное управление роботом с использованием Deep Q-Networks (DQN). 
+URL: https://arxiv.org/abs/2009.11212
+
+
+Imitation Learning Approach for AI Driving Olympics Trained on Real-world and Simulation Data Simultaneously
+
+ В этой статье описывается подход к решению задачи следования за полосой на соревнованиях AI Driving Olympics посредством имитационного обучения на смешанном наборе моделирования и реальных данных.
+URL: https://arxiv.org/abs/2007.03514
+
+
+Pengenalan Traffic Light Pada Robot Mobil Duckietown 
+
+Комментарий: она на индонезийском и плохо копируется в переводчик из-за наклонного шрифта выделенных слов, но похоже, что информация в ней полезная
+Исследование направлено на то, чтобы контролировать Duckiebot, когда он находит светофор. 
+URL: http://ejournal.ikado.ac.id/index.php/teknika/article/view/121
+
+
+Asynchronous Methods for Deep Reinforcement Learning
+
+
+О чём статья: Предложена концептуально простая и легкая структуру для глубокого обучения с подкреплением, которая использует асинхронный градиентный спуск для оптимизации контроллеров глубокой нейронной сети. Представлены асинхронные варианты четырех стандартных алгоритмов обучения с подкреплением и показано, что параллельные участники-обучающиеся оказывают стабилизирующее влияние на обучение, позволяя всем четырем методам успешно обучать контроллеры нейронной сети.
+
+URL: http://proceedings.mlr.press/v48/mniha16.html
+
+
+
+
+;---------------------------
+
+# **Сборник статей с решениями по AIDO**
+## Здесь будут располагаться статьи, в которых описаны решения по олимпиаде
+_Комментарий: для прочтения некоторых статей требовалось зарегистрироваться на сайтах, такие статьи просматривались с помощью сервиса_ [Sci-hub](https://sci-hub.do/)
+
+
+*** 
+* **Sim-to-real reinforcement learning applied to end-to-end vehicle control**
+
+_Комментарий: статья из примера_
+
+О чём статья: В этой работе мы изучаем сквозное обучение с подкреплением на основе видения для решения проблем управления транспортными средствами, таких как отслеживание полосы движения и предотвращение столкновений.
+
+URL: [Sim-to-real...](https://arxiv.org/abs/2012.07461)
+***
+* **Robust Reinforcement Learning-based Autonomous Driving Agent for Simulation and Real World**
+
+О чём статья: В этой статье представлен алгоритм на основе DRL, который может выполнять автономное управление роботом с использованием Deep Q-Networks (DQN). 
+
+URL: [Robust Reinforcement...](https://arxiv.org/abs/2009.11212)
+***
+* **Imitation Learning Approach for AI Driving Olympics Trained on Real-world and Simulation Data Simultaneously**
+
+О чём статья: В этой статье описывается подход к решению задачи следования за полосой на соревнованиях AI Driving Olympics посредством имитационного обучения на смешанном наборе моделирования и реальных данных.
+
+URL: [Imitation Learning...](https://arxiv.org/abs/2007.03514)
+***
+* **Pengenalan Traffic Light Pada Robot Mobil Duckietown**
+
+_Комментарий: статья на индонезийском и плохо копируется в переводчик из-за наклонного шрифта выделенных слов, но, похоже, что информация в ней полезная_
+
+О чём статья: Исследование направлено на то, чтобы контролировать Duckiebot, когда он находит светофор. 
+
+URL: [Pengenalan Traffic...](http://ejournal.ikado.ac.id/index.php/teknika/article/view/121)
