@@ -24,11 +24,10 @@ class Handler{
 public:  
     bool CheckAllMatrix(int** matrix, int matrix_size, int& x_coordinate, int& y_coordinate, std::vector<Square>& vector, int vector_size);
     void PrintMatrix(int** matrix, int marix_size);
-    void PrintVector(std::vector<Square> vector, int vector_size);
+    void PrintVector(std::vector<Square> vector);
     void PopBackVector(int** matrix, int matrix_size, std::vector<Square>& vector, int& vector_size, int& flag);
     int FindNewSizeRightDown(int** matrix, int matrix_size, int x_coordinate, int y_coordinate);
-    void SetSquareOfOnes(int** matrix, int matrix_size, int x_coordinate, int y_coordinate, int square_size);
-    void SetSquareOfZeros(int** matrix, int matrix_size, int x_coordinate, int y_coordinate, int square_size);
+    void SetSquare(int** matrix, int matrix_size, int x_coordinate, int y_coordinate, int square_size, int color);
 
 };
 
@@ -67,25 +66,15 @@ int Handler::FindNewSizeRightDown(int** matrix, int matrix_size, int x_coordinat
     return size;
 }
 
-void Handler::SetSquareOfOnes(int** matrix, int matrix_size, int x_coordinate, int y_coordinate, int square_size){
+void Handler::SetSquare(int** matrix, int matrix_size, int x_coordinate, int y_coordinate, int square_size, int color){
     //set square of ones with given size and coordinates in matrix
     for (int i = x_coordinate; i < x_coordinate + square_size; i++){
         for (int j = y_coordinate; j < y_coordinate + square_size;j++){
-            matrix[i][j]=1;
+            matrix[i][j]=color;
         }
     }
     count+=square_size*square_size;
     
-}
-
-void Handler::SetSquareOfZeros(int** matrix, int matrix_size, int x_coordinate, int y_coordinate, int square_size){
-    //set square of zeros with given size and coordinates in matrix
-    for (int i = x_coordinate; i < x_coordinate + square_size; i++){
-        for (int j = y_coordinate; j < y_coordinate + square_size;j++){
-            matrix[i][j]=0;
-        }
-    }
-    count+=square_size*square_size;
 }
 
 bool Handler::CheckAllMatrix(int** matrix, int matrix_size, int& x_coordinate, int& y_coordinate, std::vector<Square>& vector, int vector_size){
@@ -108,7 +97,7 @@ bool Handler::CheckAllMatrix(int** matrix, int matrix_size, int& x_coordinate, i
 
 void Handler::PopBackVector(int** matrix, int matrix_size, std::vector<Square>& vector, int& vector_size, int& flag){
    
-   while (1){
+   while (true){
        if (vector_size<=3){
            flag=1;
            count+=2;
@@ -121,8 +110,8 @@ void Handler::PopBackVector(int** matrix, int matrix_size, std::vector<Square>& 
                 
                 vector.pop_back();
                 vector_size-=1;
-                this->SetSquareOfZeros(matrix, matrix_size, square.GetXCoordinate(), square.GetYCoordinate(), square.GetSize());
-                this->SetSquareOfOnes(matrix, matrix_size, square.GetXCoordinate(), square.GetYCoordinate(), square.GetSize()-1);
+                this->SetSquare(matrix, matrix_size, square.GetXCoordinate(), square.GetYCoordinate(), square.GetSize(), 0);
+                this->SetSquare(matrix, matrix_size, square.GetXCoordinate(), square.GetYCoordinate(), square.GetSize()-1, 1);
                 vector.push_back(Square(square.GetSize()-1, square.GetXCoordinate(), square.GetYCoordinate()));
                 vector_size+=1;
                 count+=7;
@@ -131,7 +120,7 @@ void Handler::PopBackVector(int** matrix, int matrix_size, std::vector<Square>& 
             else{//deletethe last value in vector
                 vector.pop_back();
                 vector_size-=1;
-                this->SetSquareOfZeros(matrix, matrix_size, square.GetXCoordinate(), square.GetYCoordinate(), square.GetSize());
+                this->SetSquare(matrix, matrix_size, square.GetXCoordinate(), square.GetYCoordinate(), square.GetSize(), 1);
                 count+=4;
                 continue;
             }
@@ -149,11 +138,12 @@ void Handler::PrintMatrix(int** matrix, int matrix_size){
     count+=matrix_size*matrix_size;
 }
 
-void Handler::PrintVector(std::vector<Square> vector, int vector_size){
-    for (int i=0;i<vector_size;i++){
+void Handler::PrintVector(std::vector<Square> vector){
+    
+    for (int i=0;i<vector.size();i++){
         std::cout<<vector[i].GetSize()<<' '<<vector[i].GetXCoordinate()<<' '<<vector[i].GetYCoordinate()<<", ";
     }
-    count+=3*vector_size;
+    count+=3*vector.size();
     std::cout<<"\n";
 }
 
@@ -161,6 +151,7 @@ int main(){
     
     std::vector <Square> finish;//candidate of result suquence
     std::vector <Square> current;//current path
+    Handler handler;
 
     int n;
     std::cin>>n;
@@ -203,16 +194,15 @@ int main(){
         }
         count+=n*n;
 
-        Handler handler;
 
-        if (n==15){
+        if (n%3==0){
             current.push_back(Square(n*2/3, 0, 0));
             current.push_back(Square(n/3, 0, n*2/3));
             current.push_back(Square(n/3, n*2/3,0));
 
-            handler.SetSquareOfOnes(matrix, n, 0, 0, n*2/3);
-            handler.SetSquareOfOnes(matrix, n, 0, n*2/3, n/3);
-            handler.SetSquareOfOnes(matrix, n, n*2/3, 0, n/3);
+            handler.SetSquare(matrix, n, 0, 0, n*2/3, 1);
+            handler.SetSquare(matrix, n, 0, n*2/3, n/3, 1);
+            handler.SetSquare(matrix, n, n*2/3, 0, n/3, 1);
 
             count+=4;
         }
@@ -221,9 +211,9 @@ int main(){
             current.push_back(Square(n/2, 0, n/2+1));
             current.push_back(Square(n/2, n/2+1,0));
 
-            handler.SetSquareOfOnes(matrix, n, 0, 0, n/2+1);
-            handler.SetSquareOfOnes(matrix, n, 0, n/2+1, n/2);
-            handler.SetSquareOfOnes(matrix, n, n/2+1, 0, n/2);
+            handler.SetSquare(matrix, n, 0, 0, n/2+1, 1);
+            handler.SetSquare(matrix, n, 0, n/2+1, n/2, 1);
+            handler.SetSquare(matrix, n, n/2+1, 0, n/2, 1);
             count+=4;
         }
 
@@ -240,7 +230,7 @@ int main(){
             count+=2;
 
             std::cout<<"\nCurrent path: ";
-            handler.PrintVector(current, current_max_size);
+            handler.PrintVector(current);
             
             std::cout<<"\nCurrent matrix:\n";
             handler.PrintMatrix(matrix, n);  
@@ -263,7 +253,7 @@ int main(){
                 int new_size = handler.FindNewSizeRightDown(matrix, n, current_x, current_y);
                 current.push_back(Square(new_size, current_x, current_y));
                 current_max_size+=1;
-                handler.SetSquareOfOnes(matrix, n, current_x, current_y, new_size);
+                handler.SetSquare(matrix, n, current_x, current_y, new_size, 1);
                 count+=3;
             }
             else{
@@ -282,10 +272,7 @@ int main(){
 
     
     std::cout<<"\nMinimal result size: "<< result_size<<"\nCoordinates & Sizes of result squares: \n";
-    for (int i=0;i<result_size;i++){
-        std::cout<<finish[i].GetXCoordinate()+1<<' '<<finish[i].GetYCoordinate()+1<<' '<<finish[i].GetSize()<<'\n';
-    }
-    count+=3*result_size;
+    handler.PrintVector(finish);
 
     std::cout<<"\nAll number of operations for square size "<< n <<" = "<<count<<"\n";
     return 0;
