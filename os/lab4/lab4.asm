@@ -3,14 +3,11 @@ stacks segment  STACK
 stacks ends    
 
 data segment  
- ; хранится в обработчике прерываний
-KEEP_CS DW 0 ; для хранения сегмента
-KEEP_IP DW 0 ; и смещения вектора прерывания
 ; количество сигналов таймера
 isBoot dw 0
 isUnBoot dw 0
 memAdrPsp dw 0
-vect dw 0
+vect dw 0, 0
 
 
 str_in_no db 'Прерывание не установлено', 0AH, 0DH,'$'
@@ -18,7 +15,9 @@ str_int_mem db 'Прерывание резидентно в памяти', 0AH, 0DH, '$'
 str_in_yes db 'Установлен обработчик прерываний', 0AH, 0DH,'$'
 str_unb db 'Обработчик прерываний выгружен из памяти', 0AH, 0DH, '$'
 str_need_unboot db 'Требуется выгрузить обработчик прерывания из памяти', 0AH, 0DH,'$'
-str_in_already db ' Прерывание уже установлено', 0DH, 0AH, '$'
+str_in_already db 'Прерывание уже установлено', 0DH, 0AH, '$'
+str_ax db 'AX=     ', 0DH, 0AH, '$'
+len equ $ - str_ax
 
 
 data ends
@@ -27,7 +26,46 @@ code segment
 
     ASSUME CS:code, DS:data, SS:stacks
     
-  
+TETR_TO_HEX PROC near
+    and AL, 0Fh
+    cmp AL, 09
+    jbe NEXT
+    add AL, 07
+NEXT: add AL, 30h
+    ret
+TETR_TO_HEX ENDP
+;-------------------------------
+BYTE_TO_HEX PROC near
+;byte AL translate in two symbols on 16cc numbers in AX
+    push CX
+    mov AH,AL
+    call TETR_TO_HEX
+    xchg AL,AH
+    mov CL, 4
+    shr AL,CL
+    call TETR_TO_HEX
+    pop CX
+ret
+BYTE_TO_HEX ENDP
+;-------------------------------
+WRD_TO_HEX PROC near
+;translate in 16cc a 16 discharge number
+;in AL - number, DI - the address of the last symbol  
+    push BX
+    mov BH,AH
+    call BYTE_TO_HEX
+    mov [DI],AH
+    dec DI
+    mov [DI],AL
+    dec DI
+    mov AL,BH
+    call BYTE_TO_HEX
+    mov [DI],AH
+    dec DI
+    mov [DI],AL
+    pop BX
+ret
+WRD_TO_HEX ENDP
 
 
 interr proc far
@@ -147,18 +185,18 @@ ifn:
     pop dx
     mov ah, 02
     mov bh, 00
-
     int 10h
 
 ;------end		
-
+    
+    mov al, 20h
+    out  20h, al
+    
     pop dx
     pop cx
     pop bx 
     pop ax
-
-    mov al, 20h
-    out  20h, al
+    
     iret
 interr endp
 
@@ -171,26 +209,32 @@ resident proc
     push ax
     push dx
     push cx
+    push bx
     
     mov dx, offset str_int_mem
     mov ah, 09h
     int 21h
    
 
+    mov AX, memAdrPsp
+    mov BX, seg code
+    sub BX, AX
     mov DX,offset eeend; размер в байтах от начала сегмента
     mov CL,4 ; перевод в параграфы
     shr DX,CL
     inc DX ; размер в параграфах
+    add DX, BX
     mov AH,31h
     mov al, 00h
     int 21h  
     
+    pop bx
     pop cx
     pop dx
     pop ax
 
 
-ret
+    ret
 resident endp
 
 ;------------------------
@@ -198,7 +242,8 @@ setInterr proc
 
     push ax
     push dx
-
+    push bx
+    
     mov dx, offset str_in_yes
     mov ah, 09h
     int 21h
@@ -208,10 +253,6 @@ setInterr proc
     MOV AL, 1CH ; номер вектора
     INT 21H
 
-    
-    
-    ;MOV KEEP_IP, BX ; запоминание смещения
-    ;MOV KEEP_CS, ES ; и сегмента 
     
     ;сохраняем вектор исходного обработчика прерывания таймера
     mov word ptr vect+2, es
@@ -231,39 +272,39 @@ setInterr proc
     INT 21H ;меняем прерывание
     POP DS
     
+    pop bx
     pop dx
     pop ax
 
 
-ret
+    ret
 setInterr endp
 ;------------------------
 isBootFunc proc
+    push ax
     push bx
     push dx
     push es
-    ;push ds
-    mov ax, 351Ch ; ?????? ???????? ?????? 
+
+    mov ax, 351Ch ;
     int  21h
     ;bx, es
     ;-------------------
-    mov  dx, es:[bx+3];---signature
-    
-    ;mov bx, offset signature
-    ;mov ax, ds:[bx]
+    add bx, offset signature - offset interr
+    mov  dx, es:[bx];---signature
+
     mov ax, 0ff00h
     cmp dx, ax
     jne e_i_s
-    mov  dx, es:[bx+4];---signature
-    
-    
+    mov  dx, es:[bx+2];---signature
+
     mov ax, 0ffffh
     cmp dx, ax
     je ad
     jmp e_i_s
     
 ad:
-    ;pop ds
+
     pop es
     mov isBoot, 1
     mov dx, offset str_in_already
@@ -276,6 +317,7 @@ e_i_s:
 ex_:    
     pop dx
     pop bx
+    pop ax
     ret
 isBootFunc endp    
 
@@ -283,32 +325,41 @@ isBootFunc endp
 isUnBootFunc proc
     push es
     push ax
+    push dx
+    push cx
+    
     mov ax, memAdrPsp
     mov es, ax
     mov cl, es:[80h]
-
-    cmp  cl, 3h	
+    
+    cmp cl, 4h
+    jl non
+    
+    mov dl, es:[81h]
+    cmp dl, ' '
     jne non
 
-    mov dl, ds:[81h]
+    mov dl, es:[81h+1]
     cmp dl, '/'
     jne non
     
-    mov dl, ds:[81h+1h]
+    mov dl, es:[81h+2h]
     cmp dl, 'u'
     jne non
     
-    mov dl, ds:[81h+2h]
+    mov dl, es:[81h+3h]
     cmp dl, 'n'
     jne non
     
-    mov isBoot, 1h
+    mov isUnBoot, 1h
     
     mov dx, offset str_need_unboot
     mov ah, 09h
     int 21h
 
 non:
+    pop cx
+    pop dx
     pop ax
     pop es
     ret
@@ -319,40 +370,78 @@ UnBootFunc proc
     
     push dx
     push ax
+    push es
+    push bx
     mov dx, offset str_unb
     mov ah, 09h
     int 21h
     
+    mov ax, seg data
+    mov bx, seg code
+    
+    sub bx, ax
+
     push es
-    ;функция получения вектора
+    push bx
+    
     mov ah, 35h
     mov al, 1Ch; 
-    int  21H
-    mov dx, word ptr es:[vect]
-    mov ax, word ptr es:[vect+2]
-    mov KEEP_IP, dx
-    mov KEEP_CS, ax
-    pop es
-
+    int  21h 
+    ;es, bx in resident
+    pop bx
+    push es;---memAdrCode
+    mov ax, es
+    
+    sub ax, bx
+    mov es, ax
+    
+    mov bx, offset vect; отн ds
+    
     ; в программе при выгрузке обработчика прерываний
     CLI
     PUSH DS
-    MOV DX, KEEP_IP
-    ;кладём в ds cs
-    MOV AX, KEEP_CS
-    mov dx, word ptr es:[vect]
-	mov ax, word ptr es:[vect+2]
     
+    mov dx, es:[bx];---bx
+    mov ax, es:[bx+2];--es
     MOV DS, AX
+    
     MOV AH, 25H ;устанавливаем вектор прерывания
     MOV AL, 1CH
     INT 21H ; восстанавливаем вектор
+    ;pop es
     pop ds
-    STI   
     
+    ;---free memory
+    pop es
+    mov bx, es;---code in resident
+    pop es
+    mov ax, es;---now es
+    
+    mov dx, seg code;--seg adress now program
+    sub dx, ax ;---defference
+    sub bx, dx;--es in resident
+    mov es, bx
+
+    push es
+    
+    mov ax, es:[2Ch]
+    mov es, ax
+    
+    mov ah, 49h
+    int 21h
+    
+    pop es
+    
+    
+    mov ah, 49h
+    int 21h
+     
+    pop bx 
+    pop es
     pop ax
     pop dx
-
+    STI 
+    
     ret
 UnBootFunc endp  
 ;-------------------------
@@ -363,9 +452,9 @@ BEGIN proc far
     mov AX, data
     mov DS, AX
     
-    
     mov bx, es
     mov memAdrPsp, bx
+    
     
     call isBootFunc
     call isUnBootFunc
@@ -376,14 +465,12 @@ BEGIN proc far
 boot:
     call setInterr
     call resident
-
 ;-------------------------------
 mayunboot:
     cmp isUnBoot, 1h
     jne end_pr
     call UnBootFunc
 ;-------------------------------
-    
     
 end_pr:    
     xor AL,AL
