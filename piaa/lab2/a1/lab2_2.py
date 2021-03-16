@@ -16,7 +16,9 @@ while (vertice):
 current_path = [path[0]]
 size = 1
 
-max_key = 'a'
+min_key = 'a'
+
+#print(dictionary)
 while current_path[size-1]!=path[1]:
     try:
         find = dictionary[current_path[size-1]]#list of dictionaries
@@ -28,17 +30,25 @@ while current_path[size-1]!=path[1]:
     
     
     min_evr = 1000
+    min_key = 'a'
     for i in find:# i - dict
-        keys = i.keys()
-        min_size = 0
-    
+        keys = i.keys()#pseudolist of keys
+        
         for j in keys:
-            evr=ord(j) - ord(current_path[size-1]) + i[j] - min_size
+            #print(j)
+            evr=ord(path[1]) - ord(j) + i[j]
+           # print("Evr "+str(evr)+"Min evr "+str(min_evr))
             if(evr<= min_evr):
-                min_size = i[j]
-                min_evr = evr
-                min_key = j
-                item = i
+                
+                
+                
+                if ord(min_key)<ord(j):
+                    #print("Yes")
+                    #print("Evr "+str(evr)+"Min evr "+str(min_evr))
+                    min_evr = evr
+                    #print("Evr "+str(evr)+"Min evr "+str(min_evr))
+                    min_key = j
+                    item = i
         
     find.remove(item)            
     current_path.append(min_key) 
