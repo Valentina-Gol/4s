@@ -29,11 +29,21 @@ bool Cmp::operator()(const Edge& a, const Edge& b){// a compare function to prio
 
 void printPath(int current, int begin, std::map<int, std::pair<int, float>> way){ 
     if (begin == current){
-        std::cout << current;
+        std::cout << current<< ' ';
         return ;
     }
     printPath(way[current].first, begin, way);
-    std::cout << current;
+    std::cout << current<< ' ';
+}
+
+void printQueue(std:: priority_queue <Edge, std::vector<Edge>, Cmp> currentQueue){
+    std::cout<<"Current queue: ";
+    while (!currentQueue.empty()){
+        auto vertice = currentQueue.top();
+        std::cout<<vertice.parent<<':'<<" ("<< vertice.name<<", "<< vertice.heuristic <<"), ";
+        currentQueue.pop();
+    }
+    std::cout<<"\n";
 }
 
 int main(){
@@ -61,7 +71,9 @@ int main(){
     currentQueue.push(Edge(begin, '\0', float(result - begin)));
 
     while(!currentQueue.empty()){
+        printQueue(currentQueue);
         if (currentQueue.top().name == result){ // if find a result vertice
+            std::cout<<"Find path! Result path: ";
             printPath(result, begin, shortPath);
             std::cout<<"\n";
             return 0;
@@ -69,6 +81,7 @@ int main(){
 
         for (int i = 0 ; i < 1 && !currentQueue.empty(); i++){ 
             Edge current = currentQueue.top();
+            std::cout<<"Consider a vertice: "<<current.parent<<':'<<", ("<< current.name<<", "<< current.heuristic <<") \n";
 
             if (current.name == result){
                 continue;
@@ -79,19 +92,22 @@ int main(){
         }
 
         int size = Edges.size();
+        
         for(int i = 0; i < size; i++){// consider a taken off vertices
 
             Edge currentEdge = Edges[i];
             alreadyViewedVertices[currentEdge.name] = true;
-
+            std::cout<<"Consider a adjacent vertices for virtice '"<<currentEdge.name<<"'\n";
             for (int j = 0; j < pathesGraph[currentEdge.name].size(); j++){// consider all adjacent vertices  
+                
                 std::pair<int, float> newEdge = pathesGraph[currentEdge.name][j];
-
+                std::cout<<"Check ("<< newEdge.first<<", "<<newEdge.second<<")\n";
                 if (alreadyViewedVertices[newEdge.first]){
                     continue;
                 }    
                 float newPath = newEdge.second + shortPath[currentEdge.name].second;
                 if (shortPath[newEdge.first].second == 0 || newPath < shortPath[newEdge.first].second){//check path from this vertice
+                    std::cout<<"Find the shorter path or new path to  "<<newEdge.first<<" from "<< currentEdge.name<<" with length "<< newPath <<" \n";
                     //added if he path more short or vertice not considered earlier
                     shortPath[newEdge.first].first = currentEdge.name;
                     shortPath[newEdge.first].second = newPath;
@@ -99,6 +115,7 @@ int main(){
                 }
             }
         }
+        std::cout<<"\n";
         Edges.clear();
     }
     return 0;

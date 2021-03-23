@@ -9,4 +9,42 @@
 * либо в классе Simulator(gym_dickietown/simulator.py) поменять метод render: заменить строчку segment=segment на segment=True
 * либо время вызова этого метода render в коде для объекта среды можно передавать 1/True, например, env.render(segment = 1)
 
-Пример сегментированного изображения при запуске run_segmentation.py
+
+
+
+Для кода из [репозитория](https://github.com/Velythyl/gym-duckietown/tree/fix-seg-text) с исправленными ошибками процесс извлечения картинок выглядит следующим образом.  
+Для начала, картинку, которую наблюдает бот, нужно сегментировать(для этого нужно в методу render_obs у класса Simulator поменять строку segment=segment на segment=True). Затем в файле run_simulation в самом конце есть цикл, в котором происходит рендеринг, там и осуществим сохранение картинок.
+
+        ...
+        obs, rew, done, misc = environment.step(np.array(action))
+        rewards.append(rew)
+        environment.render()
+        
+        #отображается на картинке, также нужно для имени картинки
+        nb_of_steps += 1
+        #---------------
+        
+        #здесь прописываем путь до папки, в которую хотим сохранить картинки
+        sub_path = "/home/i/segmentation_repo/Pictures/"
+        
+        #если такой паки нет, создаём
+        if not os.path.exists(sub_path):
+            os.makedirs(sub_path)
+
+        #создаём объект класса Image для работы с ним
+        #obs получаем из environment.step выше
+        to_save = Image.fromarray(obs)
+        
+        #как будет называться картинка
+        filename = 'Segment-%02d.jpeg' % nb_of_steps
+        #полное имя картинки
+        filepath = os.path.join(sub_path, filename)
+        
+        to_save.save(filepath) 
+        #---------------
+        ...
+
+Полный код есть на ветке segmentation
+
+dic = f'{\n    "full_picture_name": {},\n    "speed": {}\n, }'.format(filepath_pic, str(policy.ref_velocity))
+

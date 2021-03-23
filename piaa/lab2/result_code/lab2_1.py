@@ -40,13 +40,12 @@ current_path = [Edge(path[0], 0)]#store a path of vertices
 size = 1#current path size
 
 while (size>0) & (current_path[size-1].name!=path[1]):
-    #print_dict(dictionary)
-    #print_path("\nCurrent path: ", current_path)
+    print_path("\nCurrent path: ", current_path)
     try:
         find = dictionary[current_path[size-1].name]#list of edges
-        #print("Trying find greedy path from "+current_path[size-1].name)
+        print("Trying find greedy path from "+current_path[size-1].name)
     except:
-        #print("No path from "+ current_path[size-1].name+", delete this vertice from current_path")
+        print("No path from "+ current_path[size-1].name+", delete this vertice from current_path")
         current_path.pop()
         size-=1
         continue
@@ -64,22 +63,14 @@ while (size>0) & (current_path[size-1].name!=path[1]):
             min_key = i.name
             item = i
     if f>0:
-        #print("Find greedy path from "+item.name)
+        print("Find greedy path from "+item.name)
         dictionary[current_path[size-1].name][mem_k-1].flag=1
         dictionary[current_path[size-1].name][mem_k-1].was=1
         current_path.append(item) 
         size+=1
     else:
-        #print("No path from "+ current_path[size-1].name+", delete this vertice from current_path")
-        #vert = current_path.pop()   
+        print("No path from "+ current_path[size-1].name+", delete this vertice from current_path")
         size-=1
-        #if vert in dictionary:
-        #    ind = dictionary[vert.name].index(vert)# get vertice to remove from current path
-        #    dictionary[vert.name][ind].flag=0
         current_path.pop()
-
-#if size>0:        
-    #print_path("\nResult path: ", current_path)
-#else:
-    #print("\nNo way from '"+path[0]+"' to '"+path[1]+"' !")   
-print_path("", current_path) 
+ 
+print_path("\nResult path:", current_path) 
