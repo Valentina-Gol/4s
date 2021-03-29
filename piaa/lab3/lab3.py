@@ -37,6 +37,7 @@ def find_path_and_flow(dictionary, source, oultel): # return min flow and path
         min_size_ord = 10000
         f = 0
         for i in find:# i - dict
+            print(i)
             if ord(i.finish) < min_size_ord:# in alphabet order
                 f = 1
  
@@ -104,7 +105,7 @@ for i in range(count):
 while dictionary:
     dictionary, new_flow, flow_size = find_path_and_flow(dictionary, source, outlet)
     print_dict(dictionary)
-    new_flow = add_flow(flow_dictionary, new_flow, flow_size)
+    new_flow = changed_flow(flow_dictionary, new_flow, flow_size)
     print_dict(flow_dictionary)
 
 print_dict(flow_dictionary)    

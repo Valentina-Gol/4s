@@ -1,10 +1,4 @@
 import copy
-class Edge:
-    def __init__(self, res, len):
-        self.finish = res
-        self.length = len
-
-
 def print_dict(dic):
     print("{")
     for i in dic:
@@ -17,50 +11,71 @@ def print_dict(dic):
 
 def print_path(string, path):
     for i in path:
-        string += i.finish
+        string += str(i)
     print(string)       
 
 def find_path_and_flow(dictionary, source, oultel): # return min flow and path
-    current_path = [Edge(source, 0)]
+    current_path = [{source:0}]
     size = 1
-    while size > 0 and current_path[size-1].finish != outlet:
-        print_path("\nCurrent path: ", current_path)
+    while size > 0 and current_path[size-1] != outlet:
+        print(dictionary)
+        print(size)
+
+        l = 0
+        check = current_path[size-1].keys()
+        for i in check:
+            if i == outlet:
+                l = 1
+        if l == 1:    
+            break    
+        
         try:
-            find = dictionary[current_path[size-1].finish]#list of edges
-            print("Trying find greedy path from " + current_path[size-1].finish)
+            for i in current_path[size-1].keys():
+                print(i)
+                find = dictionary[i]#list of dict
+                print(find)
+                print("Trying find greedy path from " + str(current_path[size-1]))
         except:
-            print("No path from " + current_path[size-1].finish + ", delete this vertice from current_path")
+            print("No path from " + str(current_path[size-1]) + ", delete this vertice from current_path")
+            dictionary
             current_path.pop()
             size -= 1
             continue
-
+        
         min_size_ord = 10000
         f = 0
+        print(find)
         for i in find:# i - dict
-            if ord(i.finish) < min_size_ord:# in alphabet order
+            print(i)
+            if ord(i) < min_size_ord:# in alphabet order
                 f = 1
  
-                min_size_ord = ord(i.finish)
+                min_size_ord = ord(i)
                 item = i
         if f > 0:
-            print("Find path from " + item.finish)
-
-            current_path.append(item) 
+            print("Find path from " + item)
+            print(item)
+            current_path.append({item:find[i]}) 
+            print_path("path", current_path)
             size += 1
         else:
-            print("No path from " + current_path[size-1].finish + ", delete this vertice from current_path")  
+            print("No path from " + str(current_path[size-1]) + ", delete this vertice from current_path")  
             size -= 1
             current_path.pop()
+            dictionary.pop()
     if size > 0:
         flow = 10000
         for i in current_path:
-            if i.length < flow and i.length > 0:
-                flow = i.length
-        return dictionary, current_path, flow
+            ind = current_path.index(i)
+            print(current_path[ind])
+            for j in i.keys():
+                if current_path[ind][j] < flow and current_path[ind][j] > 0:
+                    flow = current_path[ind][j]
+        return current_path, flow
     else:
-        return dictionary, [], 0            
+        return [], 0            
 
-def changed_flow(dictionary, path, flow):
+def changed_flow(dictionary, path, flow): # path - list
     i = 0
     try:
         for vertice in path:
@@ -69,25 +84,34 @@ def changed_flow(dictionary, path, flow):
                 find = dictionary[vertice]
                 for j in find:
                     if j == path[i+1]:
-                        dictionary[vertice[flag]].length += flow #if vertice source vertice alredy in dictionary
+                        dictionary[vertice[flag]] += flow #if vertice source vertice alredy in dictionary
                         break
                     flag += 1
                 if flag == 0:
-                    dictionary[vertice].append(Edge(path[i+1].finish, flow))
+                    dictionary[vertice][path[i+1]] = flow
             else:
-                dictionary[vertice]=[Edge(path[i+1].finish, flow)]#if vertice source vertice not in dictionary
-                print(path[i+1].finish)
+                for j in path[i+1].keys():
+                    dictionary[vertice]= {j:flow}#if vertice source vertice not in dictionary
             i += 1
     except:
-        return dictionary
+        return
 
-def delete_path(path_string, dictionary, flow):
+def delete_path(dictionary, path_string, flow):
+    print(path_string)
+    
     for i in range(len(path_string)-1):
-        dictionary[path_string[i]][path_string[i+1]] -= flow
-        if dictionary[path_string[i]][path_string[i+1]] == 0:
-            dictionary[path_string[i]].pop(path_string[i+1])
-        #if not dictionary[path_string[i]]:
-        #    dictionary.pop(dictionary[path_string[i]])    
+        print(dictionary)
+        keys = path_string[i].keys()
+        keys1 = path_string[i+1].keys()
+        for j in keys:
+            for k in keys1:
+                dictionary[j][k] -= flow
+                if dictionary[j][k] == 0:
+                    dictionary[j].pop(k)
+                    print(dictionary[j])
+                if not dictionary[j]:
+                    print(dictionary[j])
+                    dictionary.pop(j)    
         
 
 
@@ -110,5 +134,13 @@ for i in range(count):
         dictionary[vertice[0]][vertice[1]] = float(vertice[2])    
 print(dictionary)    
 
-delete_path('abd', dictionary, 6)
+while dictionary:
+    print("Finding flow")
+    flow_path, flow_size = find_path_and_flow(dictionary, source, outlet)
+    print("Changing flow" + str(flow_size))
+    #changed_flow(flow_dictionary, flow_path, flow_size)
+    print("Delete path")
+    delete_path(dictionary, flow_path, flow_size)
+
 print(dictionary)
+print(flow_dictionary)
