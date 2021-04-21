@@ -1,265 +1,288 @@
-code    segment
-        assume cs:code, ds:code, ss:nothing
-        org 100h
+code segment
+assume  cs:code, ds:data, ss:stacks
 
-start: 
-jmp begin
+stacks  segment stack
+ dw  256 dup(0)
+stacks  ends
 
-str_install db 'loading interruption',0dh,0ah,'$'
-str_already_install db 'interraption is already loaded',0dh,0ah,'$'
-str_not_install db 'interruption is not installed',0dh,0ah,'$'
-str_restore db 'unloading interruption',0dh,0ah,'$'       
+data segment
+    str_load db  "interruption has loaded",0dh,0ah,"$"
+    str_loaded db  "interruption  already loaded",0dh,0ah,"$"
+    str_unload db  "interruption has unloaded",0dh,0ah,"$"
+    str_not_loaded  db  "interruption is not loaded",0dh,0ah,"$"
+    is_load  db  0
+    is_un db  0
+data ends
 
-my_interrupt proc far              
-    jmp my_interrupt_begin
-
-my_interrupt_data:
-signature dw 6666h
-my_interrupt_stack db 100h dup(0)
-keep_ip dw 0
-my_interrupt_keep_int_cs dw 0
-keep_ss dw 0
-keep_sp dw 0
-
-        ; code
-my_interrupt_begin:
-    push ds
-    push ax
-    mov ax, cs
-    mov ds, ax
-
-    mov keep_ss, ss
+interruption proc far
+    jmp  start
+interruptiondata:
+    key_value db 0
+    signature dw 6666h
+    keep_ip dw 0
+    keep_cs dw 0
+    keep_psp dw 0
+    keep_ax dw 0
+    keep_ss dw 0
+    keep_sp dw 0
+    new_stack dw 256 dup(0)
+		
+start:
+    mov keep_ax, ax
     mov keep_sp, sp
-
-    mov ax, cs
+    mov keep_ss, ss
+    mov ax, seg new_stack
     mov ss, ax
-    mov sp, offset my_interrupt_stack
-    add sp, 100h
+    mov ax, offset new_stack
+    add ax, 256
+    mov sp, ax	
 
-    push es
-    push bp
-    push cx
+    push ax
     push bx
+    push cx
     push dx
-    push di
     push si
+    push es
+    push ds
+    mov ax, seg key_value
+    mov ds, ax
     
     in al, 60h
-    cmp al, 11h
-    je my_interrupt_w
+    cmp al, 11h	
+    je key_w
     cmp al, 12h
-    je my_interrupt_e
+    je key_e
     cmp al, 13h
-    je my_interrupt_r
-    jmp my_interrupt_default
-    my_interrupt_default:
+    je k_r
+    
     pushf
-    call dword ptr keep_ip
-    jmp finish
+    call dword ptr cs:keep_ip
+    jmp end_interr
 
-my_interrupt_w:
-    mov cl, '1'
-    jmp handler
-my_interrupt_e:
-    mov cl, '2'
-    jmp handler
-my_interrupt_r:
-    mov cl, '3'
-    jmp handler    
+key_w:
+    mov key_value, '1'
+    jmp next_key
+key_e:
+    mov key_value, '2'
+    jmp next_key
+k_r:
+    mov key_value, '3'
 
-handler:
+next_key:
     in al, 61h
     mov ah, al
-    or al, 80h
+    or 	al, 80h
     out 61h, al
-    xchg ah, al
+    xchg al, al
     out 61h, al
     mov al, 20h
     out 20h, al
-    
-    mov ah, 05h 
+  
+print_key:
+    mov ah, 05h
+    mov cl, key_value
     mov ch, 00h
     int 16h
-    jmp finish
+    or 	al, al
+    jz 	end_interr
+    mov ax, 0040h
+    mov es, ax
+    mov ax, es:[1ah]
+    mov es:[1ch], ax
+    jmp print_key
 
-finish:
-    pop si
-    pop di
-    pop dx
-    pop bx
-    pop cx
-    pop bp
-    pop es
+end_interr:
+    pop  ds
+    pop  es
+    pop		si
+    pop  dx
+    pop  cx
+    pop  bx
+    pop		ax
 
-    mov ss, keep_ss
     mov sp, keep_sp
-    pop ax
-    pop ds
+    mov ax, keep_ss
+    mov ss, ax
+    mov ax, keep_ax
 
-    mov al, 20h
-    out 20h, al
-    iret
-my_interrupt endp                
+    mov  al, 20h
+    out  20h, al
+iret
+interruption endp
+ _end:
 
-
-wrd_to_dec proc near            
-	push bx
-    push dx
-    push di
-    push si
+is_interr_load proc
     push ax
+    push bx
+    push si
+    
+    mov  ah, 35h
+    mov  al, 09h
+    int  21h
+    mov  si, offset signature
+    sub  si, offset interruption
+    mov  ax, es:[bx + si]
+    cmp	 ax, signature
+    jne  eeendis_l
+    mov  is_load, 1
+    
+eeendis_l:
+    pop  si
+    pop  bx
+    pop  ax
+    ret
+    is_interr_load endp
 
-  	mov bx, 10
-  	loop1:
-    div bx
-    add dl, '0'
-    mov [di], dl
-    xor dx, dx
-    dec di
-    cmp ax, 0
-    jne loop1
+    int_load  proc
+    push ax
+    push bx
+    push cx
+    push dx
+    push es
+    push ds
 
-    cmp si, 0
-    je wrd_to_dec_end
-    cmp si, di
-    jge wrd_to_dec_end
-    wrd_to_dec_prefix_loop:
-    mov dl, '0'
-    mov [di], dl
-    dec di
-    cmp di, si
-    jl wrd_to_dec_prefix_loop
-
-wrd_to_dec_end:
-    pop ax
-    pop si
-    pop di
-    pop dx
-	pop bx
-  	ret
-wrd_to_dec endp          
-
-
-load_in_memory_int proc near             
     mov ah, 35h
     mov al, 09h
     int 21h
+    mov keep_cs, es
     mov keep_ip, bx
-    mov my_interrupt_keep_int_cs, es
-
-    mov dx, offset my_interrupt
+    mov ax, seg interruption
+    mov dx, offset interruption
+    mov ds, ax
     mov ah, 25h
     mov al, 09h
     int 21h
+    pop ds
 
-    mov dx, offset last_byte
-    mov cl, 4
+    mov dx, offset _end
+    mov cl, 4h
     shr dx, cl
+    add	dx, 10fh
     inc dx
+    xor ax, ax
     mov ah, 31h
     int 21h
-load_in_memory_int endp 
 
+    pop es
+    pop dx
+    pop cx
+    pop bx
+    pop ax
+ret
+int_load  endp
 
-reload_in_memory_int proc near  
+unload_interrupt proc
+    cli
+    push ax
+    push bx
     push dx
     push ds
     push es
-    push bx
-
+    push si
+    
     mov ah, 35h
     mov al, 09h
     int 21h
-
-    mov ax, es
-    mov ds, ax
-    mov dx, keep_ip
-    mov ax, my_interrupt_keep_int_cs
+    mov si, offset keep_ip
+    sub si, offset interruption
+    mov dx, es:[bx + si]
+    mov ax, es:[bx + si + 2]
+ 
+    push ds
     mov ds, ax
     mov ah, 25h
     mov al, 09h
     int 21h
-
+    pop ds
+    
+    mov ax, es:[bx + si + 4]
+    mov es, ax
     push es
     mov ax, es:[2ch]
     mov es, ax
     mov ah, 49h
     int 21h
     pop es
+    mov ah, 49h
     int 21h
-
-    pop bx
+    
+    sti
+    
+    pop si
     pop es
     pop ds
     pop dx
-    ret
-reload_in_memory_int endp                
-
-chech_is_load proc near   
-    push ax
-    push bx
-    push es
-
-    mov ah, 35h
-    mov al, 09h
-    int 21h
-
-    push ds
-    mov ax, es
-    mov ds, ax
-    mov ax, signature
-    cmp ax, 6666h
-    pop ds
-
-    pop es
     pop bx
     pop ax
-    ret
-chech_is_load endp
-
-
-begin:
-    cmp byte ptr es:[81h+1], '\'
-    jne need_load
-    cmp byte ptr es:[81h+2], 'u'
-    jne need_load
-    cmp byte ptr es:[81h+3], 'n'
-    jne need_load
-
-    call chech_is_load
-    jne int_not_loaded
-    call reload_in_memory_int
-    mov dx, offset str_restore
-    mov ah, 09h
-    int 21h
-    jmp eeend
-
-int_not_loaded:
-    mov dx, offset str_not_install
-    mov ah, 09h
-    int 21h
-    jmp eeend
-
-need_load:
-    call chech_is_load
-    je inst
-    mov dx, offset str_install
-    mov ah, 09h
-    int 21h
-    call load_in_memory_int
-    jmp eeend
-
-inst:
-    mov dx, offset str_already_install
-    mov ah, 09h
-    int 21h
-    jmp eeend
-
-eeend:
-    xor     al,al
-    mov     ah,4ch
-    int     21h   
  
-last_byte:
-code    ends
-end start
+ret
+unload_interrupt endp
+
+is_unload_  proc
+    push ax
+    push es
+
+    mov ax, keep_psp
+    mov es, ax
+    cmp byte ptr es:[82h], '\'
+    jne eeendun
+    cmp byte ptr es:[83h], 'u'
+    jne eeendun
+    cmp byte ptr es:[84h], 'n'
+    jne eeendun
+    mov is_un, 1
+ 
+eeendun:
+    pop es
+    pop ax
+ ret
+is_unload_ endp
+
+print_str proc near
+    push ax
+    mov ah, 09h
+    int 21h
+    pop ax
+ret
+print_str endp
+
+begin proc
+    push ds
+    xor ax, ax
+    push ax
+    mov ax, data
+    mov ds, ax
+    mov keep_psp, es
+    
+    call is_interr_load
+    call is_unload_
+    cmp is_un, 1
+    je unload
+    mov al, is_load
+    cmp al, 1
+    jne load
+    mov dx, offset str_loaded
+    call print_str
+    jmp eeend
+load:
+    mov dx, offset str_load
+    call print_str
+    call int_load
+    jmp  eeend
+unload:
+    cmp  is_load, 1
+    jne  not_loaded
+    mov dx, offset str_unload
+    call print_str
+    call unload_interrupt
+    jmp  eeend
+not_loaded:
+    mov  dx, offset str_not_loaded
+    call print_str
+eeend:
+    xor al, al
+    mov ah, 4ch
+    int 21h
+begin endp
+code ends
+end begin
