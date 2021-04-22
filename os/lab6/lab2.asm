@@ -1,233 +1,165 @@
-MAIN    SEGMENT
-        ASSUME CS:MAIN, DS:MAIN, SS:NOTHING
-        ORG 100H
+testpc	   segment
+assume  cs:testpc, ds:testpc, es:nothing, ss:nothing
+org	   100h
+start: jmp begin
 
-START:  JMP BEGIN
-; DATA
-UNAVAILABLE_ADDRESS db 'Unavailable memory address: $'
-ENVIROMENT_ADDRESS db 'Enviroment address: $'
-COMMAND_LINE_EDGE db 'End of command line: $'
-NO_COMMAND_LINE_EGDE db 'End of command line is empty',10,13,'$'
-ENVIDOMENT_DATA db 'Enviroment data: $'
-MODULE_PATH db 'Loaded modlue path: $'
-ENDL db 13,10,'$'
-
-; PROCEDURES
-TETR_TO_HEX     PROC    near
-        and     AL, 0Fh
-        cmp     AL, 09
-        jbe     NEXT
-        add     al,07
-NEXT:   add     al, 30h
-        ret
-TETR_TO_HEX     ENDP
-;--------------------------
-BYTE_TO_HEX     PROC    near   
-; input:        AL=F8h (число)
-; output:       AL={f}, AH={8} (в фигурных скобках символы)
-;
-; переводит AL в два символа в 16-й сс в AX
-; в AL находится старшая, в AH младшая цифры
-        push    cx
-        mov     ah,al
-        call    TETR_TO_HEX
-        xchg    al,ah
-        mov     cl,4
-        shr     al,cl
-        call    TETR_TO_HEX
-        pop     cx
-        ret
-BYTE_TO_HEX     ENDP
-;--------------------------
-WRD_TO_HEX      PROC    near
-; input:        AX=FH7Ah (число)
-;               DI={адрес} (указатель на последний символ в памяти, куда будет записан результат)
-; output:       начиная с [DI-3] лежат символы числа в 16-й сс
-;               AX не сохраняет начальное значение
-;
-; перевод AX в 16-ю сс
-        push    bx
-        mov     bh,ah
-        call    BYTE_TO_HEX
-        mov     [di],ah
-        dec     di
-        mov     [di],al
-        dec     di
-        mov     al,bh
-        call    BYTE_TO_HEX
-        mov     [di],ah
-        dec     di
-        mov     [di],al
-        pop     bx
-        ret
-WRD_TO_HEX      ENDP
-
-BYTE_TO_DEC     PROC    near
-; input:        AL=0Fh (число)
-;               SI={адрес} (адрес поля младшей цифры)
-;
-; перевод AL в 10-ю сс
-        push    cx
-        push    dx
-        push    ax
-        xor     ah,ah
-        xor     dx,dx
-        mov     cx,10
-loop_bd:
-        div     cx
-        or      dl,30h
-        mov     [si],dl
-        dec     si
-        xor     dx,dx
-        cmp     ax,10
-        jae     loop_bd
-        cmp     ax,10
-        je      end_l
-        or      al,30h
-        mov     [si],al
-end_l:
-        pop     ax
-        pop     dx
-        pop     cx
-        ret
-BYTE_TO_DEC     ENDP
-
-WRITE_AL_HEX PROC NEAR
-        push ax
-        push dx
-        call BYTE_TO_HEX
-
-        mov dl, al
-        mov al, ah
-        mov ah, 02h
-        int 21h
-
-        mov dl, al
-        int 21h
-        pop dx
-        pop ax
-        ret
-WRITE_AL_HEX ENDP
-
-WRITE_ENDL PROC NEAR
-        push ax
-        push dx
-
-        mov dx, offset ENDL
-        mov ah, 09h
-        int 21h
-
-        pop dx
-        pop ax
-        ret
-WRITE_ENDL ENDP
-
-;--------------------------
-; CODE
-BEGIN:
-
-    ; Сегментный адрес недоступной памяти
-    mov dx, offset UNAVAILABLE_ADDRESS
-    mov ah, 09h
-    int 21h
-
-    mov bx, ds:[02h]
-    mov al, bh
-    call WRITE_AL_HEX
-    mov al, bl
-    call WRITE_AL_HEX
-    call WRITE_ENDL
-    
-    ; Сегментный адрес среды
-    mov dx, offset ENVIROMENT_ADDRESS
-    mov ah, 09h
-    int 21h
-
-    mov bx, ds:[2Ch]
-    mov al, bh
-    call WRITE_AL_HEX
-    mov al, bl
-    call WRITE_AL_HEX
-    call WRITE_ENDL
-
-    ; Хвост командной строки в символьном виде
-    mov ch, 0h
-    mov cl, ds:[80h]
-
-    cmp cl, 0
-    je no_edge
-    
-    mov dx, offset COMMAND_LINE_EDGE
-    mov ah, 09h
-    int 21h
-
-    mov bx, 0
-edge_loop:
-    mov dl, ds:[81h+bx]
-    mov ah, 02h
-    int 21h
-
-    inc bx
-    loop edge_loop
-
-    call WRITE_ENDL
-
-no_edge:
-    mov dx, offset NO_COMMAND_LINE_EGDE
-    mov ah, 09h
-    int 21h
-
-    ; Вывод данных области среды
-    mov dx, offset ENVIDOMENT_DATA
-    mov ah, 09h
-    int 21h
-
-    mov es, ds:[2Ch]
-    mov bx, 0
-    print_env_variable:
-        mov dl, es:[bx]
-
-        cmp dl, 0
-        je variable_end
-
-        mov ah, 02h
-        int 21h
-        inc bx
-        jmp print_env_variable
-    variable_end:
-        mov dl, es:[bx+1]
-        call WRITE_ENDL
-        cmp dl, 0
-        je enviroment_end
-
-        inc bx
-        jmp print_env_variable
-enviroment_end:
-    ; Вывод пути загружаемого модуля
-    mov dx, offset MODULE_PATH
-    mov ah, 09h
-    int 21h
-
-    add bx, 4
-    path_loop:
-        mov dl, es:[bx]
-        cmp dl, 0
-        jne print_path_byte
-        je path_end
-    print_path_byte:
-        mov ah, 02h
-        int 21h
-        inc bx
-        jmp path_loop
-path_end:
+str_not_mem 		db 'inaccessible memory:     ', 0dh,0ah,'$'
+str_env_adr		db 'enviroment adress:     ', 0dh,0ah,'$'
+str_tail			db 'command line tail:', 0dh,0ah,'$'
+endl			db  0dh,0ah,'$'
+str_env			db 'enviroment: ', 0dh,0ah,'$'
+str_path			db 'path: ', 0dh,0ah,'$'
+str_empty			db ' ', 0dh,0ah,'$'
 
 
-; Выход в DOS
-dos_exit:
-        mov ah, 01h
-        int 21h
+tetr_to_hex proc near
+	and al,0fh
+	cmp al,09
+	jbe next
+	add al,07
+next:	add al,30h
+	ret
+tetr_to_hex endp
 
-        mov     ah,4Ch
-        int     21h
-MAIN    ENDS
-        END START
+byte_to_hex proc near
+	push cx
+	mov ah,al
+	call tetr_to_hex
+	xchg al,ah
+	mov cl,4
+	shr al,cl
+	call tetr_to_hex  
+	pop cx
+	ret
+byte_to_hex endp
+
+wrd_to_hex proc near
+	push bx
+	mov bh,ah
+	call byte_to_hex
+	mov [di],ah
+	dec di
+	mov [di],al
+	dec di
+	mov al,bh
+	call byte_to_hex
+	mov [di],ah
+	dec di
+	mov [di],al
+	pop bx
+	ret
+wrd_to_hex endp
+
+print proc near
+	push ax
+	mov ah, 09h
+	int 21h
+	pop ax
+	ret
+print endp
+
+not_enough_mem_proc proc near
+	mov ax, ds:[02h]	
+   	mov di, offset str_not_mem	 
+   	add di, 24
+   	call wrd_to_hex
+   	mov dx, offset str_not_mem	
+   	call print
+   	ret
+not_enough_mem_proc endp
+
+env_info_proc proc near
+	mov ax, ds:[2ch]
+   	mov di, offset str_env_adr
+   	add di, 22
+   	call wrd_to_hex	
+   	mov dx, offset str_env_adr
+   	call print
+   	ret
+env_info_proc endp
+
+tail_info_proc proc near
+	xor cx, cx
+	mov cl, ds:[80h]
+	mov si, offset str_tail
+	add si, 18
+   	cmp cl, 0h
+   	je isstr_empty
+	xor di, di
+	xor ax, ax
+tail_loop: 
+	mov al, ds:[81h+di]
+   	inc di
+   	mov [si], al
+	inc si
+	loop tail_loop
+	mov dx, offset str_tail
+	jmp endstr_tail
+isstr_empty:
+	mov dx, offset str_empty
+endstr_tail: 
+   	call print
+   	ret
+tail_info_proc endp
+
+info_proc proc near
+	mov dx, offset str_env
+   	call print
+   	xor di,di
+   	mov ds, ds:[2ch]
+_str:
+	cmp byte ptr [di], 00h
+	jz endline
+	mov dl, [di]
+	mov ah, 02h
+	int 21h
+	jmp isend
+endline:
+   	cmp byte ptr [di+1],00h
+   	jz isend
+   	push ds
+   	mov cx, cs
+	mov ds, cx
+	mov dx, offset endl
+	call print
+	pop ds
+isend:
+	inc di
+	cmp word ptr [di], 0001h
+	jnz _str
+	call path
+	ret
+info_proc endp
+
+path proc near
+	push ds
+	mov ax, cs
+	mov ds, ax
+	mov dx, offset str_path 
+	call print
+	pop ds
+	add di, 2
+path_loop:
+	cmp byte ptr [di], 00h
+	jz pend
+	mov dl, [di]
+	mov ah, 02h
+	int 21h
+	inc di
+	jmp path_loop
+pend:
+	ret
+path endp
+
+begin:	
+	call not_enough_mem_proc
+	call env_info_proc
+	call tail_info_proc
+	call info_proc
+	xor al,al
+	mov ah,01h
+	int 21h 
+	mov ah,4ch
+	int 21h
+testpc ends
+	end start
