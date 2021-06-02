@@ -32,7 +32,6 @@ If git fall because somes files are empty: https://gist.github.com/yblee85/0614f
 academia.edu 
 
 
-
 https://arxiv.org/pdf/1911.01562.pdf
 
 
@@ -44,3 +43,9 @@ https://github.com/po4yka/university-notes/blob/master/2%20course/%D0%A2%D0%92%D
  
 https://www.youtube.com/watch?v=IHq1t7NxS8k&feature=emb_logo
 https://github.com/JAkutenshi/spbetu_metrology_2021_7304.git
+https://github.com/thehighestmath/PiAA_2019/tree/master/Sokolov_ID
+
+Скопировать файл с хоста в контейнер:
+
+scp -r -P 2223 -i aido_key.pem /home/i/tqdm-4.61.0-pyhd8ed1ab_0.tar.bz2  root@194.85.169.68:/root/
+

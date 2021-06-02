@@ -39,6 +39,7 @@ std::vector<int> KnutMorrisPratt(std::string text, std::string templ)
     
     int textpos = 0, templpos = 0;
     while (textpos < text.size()){
+        std::cout<<templpos<<
         while (templpos != -1 && (templpos == templ.size() || templ[templpos] != text[textpos])){
             templpos = prefix[templpos];
             std::cout<<templ[templpos]<<" "<<templpos<<" templ value\n";
